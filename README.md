@@ -25,13 +25,14 @@
 ### 2. Запустите приложение:
 
 ```bash
-    docker run --rm robot-task-manager
+    docker run --rm -p 8080:8080 robot-task-manager
 ```
 ---
 
 ## Swagger
 
 - [**Swagger UI**](http://localhost:8080/swagger-ui/index.html) — OpenAPI-документация
+- [**UI LOG**](http://localhost:8080/) - Форма для работы с роботами
 
 ---
 
