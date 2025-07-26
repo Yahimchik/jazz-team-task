@@ -1,0 +1,15 @@
+package com.taxisimpledrive.jazzteamtask;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
+@SpringBootApplication
+@EnableScheduling
+public class JazzTeamTaskApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(JazzTeamTaskApplication.class, args);
+    }
+
+}

@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <title>Robot World Control Panel</title>
+    <style>
+        /* Общие стили и фон */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;         /* очень светлый серо-голубой */
+            color: #1e2a38;              /* насыщенный темно-синий, чуть темнее */
+            margin: 0;
+            padding: 30px 20px 40px;     /* сверху 30, по бокам 20, снизу 40 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #4caf50;              /* насыщенный зелёный */
+            text-shadow: 0 0 6px #81c784dd; /* чуть ярче свеч */
+        }
+
+        /* Контейнер */
+        .container {
+            width: 100%;
+            max-width: 720px;
+            background: #ffffff;         /* белый фон */
+            border-radius: 10px;
+            padding: 25px 30px;
+            box-shadow: 0 0 25px #a5d6a7ee; /* чуть ярче тень зелёного */
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Заголовок лога (вне контейнера) */
+        #logTitle {
+            width: 100%;
+            max-width: 720px;
+            margin: 30px 0 10px;
+            color: #4caf50;
+            text-align: center;
+            font-weight: 600;
+            user-select: none;
+        }
+
+        /* Лог - занимает всю ширину с отступами */
+        #log {
+            background: #f0f4f8;         /* светлый голубой */
+            border-radius: 10px;
+            padding: 20px;
+            height: 480px;               /* большая высота */
+            overflow-y: auto;
+            font-family: monospace;
+            white-space: pre-wrap;
+            box-shadow: inset 0 0 12px #90a4ae;
+            color: #263238;              /* более контрастный тёмно-синий */
+            font-size: 0.95rem;
+            line-height: 1.5;
+            width: 100%;
+            max-width: 1280px;
+            box-sizing: border-box;
+            margin: 0 auto;             /* по центру */
+        }
+
+        /* Форма управления */
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        label {
+            flex: 0 0 160px;
+            font-weight: 600;
+            color: #558b2f;             /* насыщенный зелёный, приятный глазу */
+        }
+
+        select, input[type="text"], input[type="number"] {
+            flex: 1 1 220px;
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: none;
+            background: #333;
+            color: #eee;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        select:focus, input[type="text"]:focus, input[type="number"]:focus {
+            outline: none;
+            background: #81c784;
+            color: #121212;
+            box-shadow: 0 0 10px #66bb6a;
+        }
+
+        /* Кнопки */
+        button {
+            cursor: pointer;
+            padding: 12px 20px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.25s ease;
+            flex: 1 1 180px;
+            box-shadow: 0 5px 15px #4caf5077;
+        }
+
+        button:hover {
+            background: #66bb6a;
+            box-shadow: 0 7px 20px #66bb6aaa;
+        }
+
+        /* Контейнер для кнопок отправки */
+        .buttons-row {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+        }
+
+        /* Статус сообщения */
+        #status {
+            margin-top: 10px;
+            font-weight: 600;
+            color: #33691e;  /* глубокий зелёный */
+        }
+
+        /* Мобильная адаптивность */
+        @media (max-width: 500px) {
+            .form-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            label, select, input, button {
+                flex: 1 1 100%;
+            }
+
+            .buttons-row {
+                flex-direction: column;
+            }
+        }
+
+        .log-error {
+            color: #d32f2f;
+            font-weight: 700;
+        }
+
+        .log-warning {
+            color: #fbc02d;
+            font-weight: 600;
+        }
+
+        .log-info {
+            color: #33691e;
+        }
+
+        .log-debug {
+            color: #607d8b;
+        }
+
+        .log-simple-robot {
+            color: #4caf50;  /* зелёный */
+            font-weight: 600;
+        }
+        .log-robot-manager {
+            color: #2196f3;  /* синий */
+            font-weight: 600;
+        }
+        .log-other-class {
+            color: #ff9800;  /* оранжевый */
+            font-weight: 600;
+        }
+        .log-default {
+            color: #263238;  /* базовый тёмно-синий */
+        }
+
+    </style>
+</head>
+<body>
+
+<h2>🎛 Robot World Control Panel</h2>
+
+<div class="container">
+    <div class="form-row">
+        <label for="robotSelect">Выберите робота:</label>
+        <select id="robotSelect"><option value="">Все роботы</option></select>
+    </div>
+
+    <div class="form-row">
+        <label for="taskType">Тип задачи:</label>
+        <select id="taskType">
+            <option value="WORK">WORK</option>
+        </select>
+    </div>
+
+    <div class="form-row">
+        <label for="payload">Payload:</label>
+        <input type="text" id="payload" placeholder="Описание задачи" autocomplete="off" />
+    </div>
+
+    <div class="form-row">
+        <label for="complexity">Сложность задачи (целое число):</label>
+        <input type="number" id="complexity" value="1" min="1" />
+    </div>
+
+    <div class="buttons-row">
+        <button id="sendTaskBtn">Отправить задачу</button>
+        <button id="batchSendBtn">Отправить 20 задач</button>
+    </div>
+
+    <div id="status"></div>
+</div>
+
+<!-- Заголовок и лог вне контейнера, на всю ширину -->
+<h3 id="logTitle">Лог активности роботов</h3>
+<div id="log"></div>
+
+<script>
+    const logDiv = document.getElementById("log");
+    const robotSelect = document.getElementById("robotSelect");
+    const taskTypeSelect = document.getElementById("taskType");
+    const payloadInput = document.getElementById("payload");
+    const complexityInput = document.getElementById("complexity");
+    const sendTaskBtn = document.getElementById("sendTaskBtn");
+    const batchSendBtn = document.getElementById("batchSendBtn");
+    const statusDiv = document.getElementById("status");
+
+    // Цвета для id
+    const idColorMap = new Map();
+    const colors = [
+        '#e91e63', '#9c27b0', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4',
+        '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107',
+        '#ff9800', '#ff5722', '#795548', '#607d8b'
+    ];
+
+    function getColorForId(id) {
+        if (!idColorMap.has(id)) {
+            const color = colors[idColorMap.size % colors.length];
+            idColorMap.set(id, color);
+        }
+        return idColorMap.get(id);
+    }
+
+    // WebSocket для логов
+    const socket = new WebSocket("ws://" + window.location.host + "/ws/logs");
+    socket.onmessage = event => {
+        const text = event.data;
+
+        const regex = /^(\S+)\s+\[(\w+)]\s+(\S+)\s+-\s+(\S+)\s+(.*)$/;
+        const match = text.match(regex);
+
+        if (!match) {
+            // Если формат не подходит, просто выводим как есть
+            const div = document.createElement('div');
+            div.textContent = text;
+            div.classList.add('log-default');
+            logDiv.appendChild(div);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            return;
+        }
+
+        const [, timestamp, level, className, id, message] = match;
+
+        const div = document.createElement('div');
+
+        // timestamp - обычный текст
+        div.appendChild(document.createTextNode(timestamp + ' '));
+
+        // level - красим по уровню
+        const levelSpan = document.createElement('span');
+        levelSpan.textContent = '[' + level + '] ';
+        switch (level.toUpperCase()) {
+            case 'ERROR':
+                levelSpan.style.color = '#d32f2f';
+                levelSpan.style.fontWeight = '700';
+                break;
+            case 'WARN':
+            case 'WARNING':
+                levelSpan.style.color = '#fbc02d';
+                levelSpan.style.fontWeight = '600';
+                break;
+            case 'INFO':
+                levelSpan.style.color = '#33691e';
+                break;
+            case 'DEBUG':
+                levelSpan.style.color = '#607d8b';
+                break;
+            default:
+                levelSpan.style.color = '#263238';
+                break;
+        }
+        div.appendChild(levelSpan);
+
+        // className - класс из css
+        const classSpan = document.createElement('span');
+        classSpan.textContent = className + ' ';
+        switch (className) {
+            case 'SimpleRobot':
+                classSpan.classList.add('log-simple-robot');
+                break;
+            case 'RobotManager':
+                classSpan.classList.add('log-robot-manager');
+                break;
+            case 'OtherClassName':
+                classSpan.classList.add('log-other-class');
+                break;
+            default:
+                classSpan.classList.add('log-default');
+                break;
+        }
+        div.appendChild(classSpan);
+
+        // id — цвет из мапы
+        const idSpan = document.createElement('span');
+        idSpan.textContent = id + ' ';
+        idSpan.style.color = getColorForId(id);
+        idSpan.style.fontWeight = '700';
+        div.appendChild(idSpan);
+
+        // сообщение — обычный текст
+        const messageSpan = document.createElement('span');
+        messageSpan.textContent = message;
+        div.appendChild(messageSpan);
+
+        logDiv.appendChild(div);
+        logDiv.scrollTop = logDiv.scrollHeight;
+    };
+
+
+    socket.onopen = () => {
+        statusDiv.textContent = "Подключено к серверу логов";
+        statusDiv.style.color = "#33691e";
+    };
+    socket.onerror = () => {
+        statusDiv.textContent = "Ошибка соединения с сервером логов";
+        statusDiv.style.color = "#d32f2f";
+    };
+    socket.onclose = () => {
+        statusDiv.textContent = "Соединение с сервером логов закрыто";
+        statusDiv.style.color = "#fbc02d";
+    };
+
+    const robotSocket = new WebSocket("ws://" + window.location.host + "/ws/robots");
+    robotSocket.onmessage = event => {
+        const robots = event.data.split(",");
+        robotSelect.innerHTML = '<option value="">Все роботы</option>';
+        robots.forEach(id => {
+            const option = document.createElement("option");
+            option.value = id;
+            option.textContent = id;
+            robotSelect.appendChild(option);
+        });
+    };
+
+    // Загрузка списка роботов
+    async function loadRobots() {
+        try {
+            const res = await fetch('/api/robots');
+            if (!res.ok) throw new Error('Ошибка загрузки');
+            const robots = await res.json();
+            robotSelect.innerHTML = '<option value="">Все роботы</option>';
+            robots.forEach(r => {
+                const option = document.createElement("option");
+                option.value = r;
+                option.textContent = r;
+                robotSelect.appendChild(option);
+            });
+        } catch (e) {
+            console.error('Ошибка загрузки роботов', e);
+        }
+    }
+
+    loadRobots();
+    setInterval(loadRobots, 60000);
+
+    // Отправка одной задачи
+    sendTaskBtn.onclick = async () => {
+        const task = {
+            type: taskTypeSelect.value,
+            payload: payloadInput.value.trim(),
+            targetRobotId: robotSelect.value || null,
+            complexity: parseInt(complexityInput.value, 10) || 1
+        };
+        try {
+            const res = await fetch('/api/task', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(task)
+            });
+            if (res.ok) {
+                statusDiv.textContent = "Задача успешно отправлена!";
+                statusDiv.style.color = "#33691e";
+                payloadInput.value = "";
+            } else {
+                statusDiv.textContent = "Ошибка отправки задачи";
+                statusDiv.style.color = "#d32f2f";
+            }
+        } catch (e) {
+            statusDiv.textContent = "Ошибка сети";
+            statusDiv.style.color = "#d32f2f";
+        }
+    };
+
+    // Отправка пачки из 20 задач
+    batchSendBtn.onclick = async () => {
+        const type = taskTypeSelect.value;
+        const payloadBase = payloadInput.value.trim();
+        const targetRobotId = robotSelect.value || null;
+        const complexity = parseInt(complexityInput.value, 10) || 1;
+        const count = 20;
+
+        statusDiv.textContent = "Отправка пачки задач...";
+        statusDiv.style.color = "#fbc02d";
+
+        for (let i = 1; i <= count; i++) {
+            const task = {
+                type: type,
+                payload: `${payloadBase} #${i}`,
+                targetRobotId: targetRobotId,
+                complexity: complexity
+            };
+            try {
+                await fetch('/api/task', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(task)
+                });
+            } catch (e) {
+                console.error(`Ошибка отправки задачи #${i}`, e);
+            }
+        }
+        statusDiv.textContent = `Отправлено ${count} задач`;
+        statusDiv.style.color = "#33691e";
+    };
+</script>
+
+</body>
+</html>
